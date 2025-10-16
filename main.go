@@ -1,17 +1,20 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"time"
 )
 
 type Task struct {
-	Id          uint
-	Description string
-	Status      string
-	CreatedAt   time.Time
-	UpdatedAt   time.Time
+	Id          uint      `json:"id"`
+	Description string    `json:"description"`
+	Status      string    `json:"status"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 func main() {
@@ -23,14 +26,62 @@ func main() {
 	action := os.Args[1]
 	switch action {
 	case "add":
-		fmt.Println("Adding a new task")
-		// if JSON file exists
-		//   get tasks array from file
-		// else
-		//   create empty tasks array
-		// add task with provided description to array
-		// write tasks array to JSON file
-		// add task to JSON file
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "A description is necessary for the new task")
+			os.Exit(1)
+		}
+
+		tasks := []Task{}
+
+		jsonFile, err := os.Open("tasks.json")
+		if err == nil {
+			byteValue, _ := io.ReadAll(jsonFile)
+			json.Unmarshal(byteValue, &tasks)
+			jsonFile.Close()
+		} else {
+			if !errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
+		}
+
+		description := os.Args[2]
+		tasksLen := len(tasks)
+		if tasksLen > 0 {
+			tasks = append(
+				tasks,
+				Task{
+					Id:          tasks[tasksLen-1].Id + 1,
+					Description: description,
+					Status:      "todo",
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+				},
+			)
+		} else {
+			tasks = append(
+				tasks,
+				Task{
+					Id:          1,
+					Description: description,
+					Status:      "todo",
+					CreatedAt:   time.Now(),
+					UpdatedAt:   time.Now(),
+				},
+			)
+		}
+
+		byteValue, err := json.Marshal(tasks)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
+		}
+		err = os.WriteFile("tasks.json", byteValue, 0644)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
+		}
+
 	case "update":
 		fmt.Println("Updating a task")
 		// get tasks array from JSON file
