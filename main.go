@@ -107,7 +107,6 @@ func main() {
 		// set status of task to "done"
 		// write tasks array to JSON file
 	case "list":
-		fmt.Println("Listing tasks")
 		// set only to ""
 		// if status filter was provided
 		//   switch status
@@ -119,10 +118,33 @@ func main() {
 		//       set only to "in-progress"
 		//     default
 		//       warn about invalid status filter
-		// get tasks array from JSON file
-		// for each task
-		//   if only set and only equal to status of task
-		//     print task
+
+		tasks := []Task{}
+
+		jsonFile, err := os.Open("tasks.json")
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
+		}
+		byteValue, _ := io.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &tasks)
+		jsonFile.Close()
+
+		tasksLen := len(tasks)
+		for i, t := range tasks {
+			fmt.Printf(
+				"Task %d: %s\nStatus: %s\nCreated at: %s\nUpdated at: %s\n",
+				t.Id,
+				t.Description,
+				t.Status,
+				t.CreatedAt.String()[:19],
+				t.UpdatedAt.String()[:19],
+			)
+			if i < tasksLen-1 {
+				fmt.Println("")
+			}
+		}
+
 	default:
 		fmt.Fprintf(os.Stderr, "Invalid action \"%s\"\n", action)
 		os.Exit(1)
