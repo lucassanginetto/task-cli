@@ -52,6 +52,7 @@ func main() {
 
 		description := os.Args[2]
 		tasksLen := len(tasks)
+		now := time.Now()
 		if tasksLen > 0 {
 			tasks = append(
 				tasks,
@@ -59,8 +60,8 @@ func main() {
 					Id:          tasks[tasksLen-1].Id + 1,
 					Description: description,
 					Status:      "todo",
-					CreatedAt:   time.Now(),
-					UpdatedAt:   time.Now(),
+					CreatedAt:   now,
+					UpdatedAt:   now,
 				},
 			)
 		} else {
@@ -70,8 +71,8 @@ func main() {
 					Id:          1,
 					Description: description,
 					Status:      "todo",
-					CreatedAt:   time.Now(),
-					UpdatedAt:   time.Now(),
+					CreatedAt:   now,
+					UpdatedAt:   now,
 				},
 			)
 		}
