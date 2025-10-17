@@ -17,6 +17,19 @@ type Task struct {
 	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
+func tasksFromFile() ([]Task, error) {
+	tasks := []Task{}
+
+	jsonFile, err := os.Open("tasks.json")
+	if err == nil {
+		byteValue, _ := io.ReadAll(jsonFile)
+		json.Unmarshal(byteValue, &tasks)
+		jsonFile.Close()
+	}
+
+	return tasks, err
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		// print usage
@@ -31,18 +44,10 @@ func main() {
 			os.Exit(1)
 		}
 
-		tasks := []Task{}
-
-		jsonFile, err := os.Open("tasks.json")
-		if err == nil {
-			byteValue, _ := io.ReadAll(jsonFile)
-			json.Unmarshal(byteValue, &tasks)
-			jsonFile.Close()
-		} else {
-			if !errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(2)
-			}
+		tasks, err := tasksFromFile()
+		if err != nil && !errors.Is(err, os.ErrNotExist) {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
 		}
 
 		description := os.Args[2]
@@ -119,16 +124,16 @@ func main() {
 		//     default
 		//       warn about invalid status filter
 
-		tasks := []Task{}
-
-		jsonFile, err := os.Open("tasks.json")
+		tasks, err := tasksFromFile()
 		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(2)
+			if errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
+				os.Exit(1)
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
 		}
-		byteValue, _ := io.ReadAll(jsonFile)
-		json.Unmarshal(byteValue, &tasks)
-		jsonFile.Close()
 
 		tasksLen := len(tasks)
 		for i, t := range tasks {
