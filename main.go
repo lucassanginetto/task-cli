@@ -233,17 +233,16 @@ func main() {
 		writeTasksToFile(tasks)
 
 	case "list":
-		// set only to ""
-		// if status filter was provided
-		//   switch status
-		//     case "done"
-		//       set only to "done"
-		//     case "todo"
-		//       set only to "todo"
-		//     case "in-progress"
-		//       set only to "in-progress"
-		//     default
-		//       warn about invalid status filter
+		status := ""
+		if len(os.Args) > 2 {
+			switch os.Args[2] {
+			case "todo", "in-progress", "done":
+				status = os.Args[2]
+			default:
+				fmt.Fprintf(os.Stderr, "Invalid status \"%s\"\n", os.Args[2])
+				os.Exit(1)
+			}
+		}
 
 		tasks, err := tasksFromFile()
 		if err != nil {
@@ -256,18 +255,17 @@ func main() {
 			}
 		}
 
-		tasksLen := len(tasks)
-		for i, t := range tasks {
-			fmt.Printf(
-				"Task %d: %s\nStatus: %s\nCreated at: %s\nUpdated at: %s\n",
-				t.Id,
-				t.Description,
-				t.Status,
-				t.CreatedAt.String()[:19],
-				t.UpdatedAt.String()[:19],
-			)
-			if i < tasksLen-1 {
-				fmt.Println("")
+		fmt.Println("")
+		for _, t := range tasks {
+			if status == "" || t.Status == status {
+				fmt.Printf(
+					"Task %d: %s\nStatus: %s\nCreated at: %s\nUpdated at: %s\n\n",
+					t.Id,
+					t.Description,
+					t.Status,
+					t.CreatedAt.String()[:19],
+					t.UpdatedAt.String()[:19],
+				)
 			}
 		}
 
