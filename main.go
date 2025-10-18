@@ -43,6 +43,44 @@ func writeTasksToFile(tasks []Task) error {
 	return nil
 }
 
+func idFromArgs() uint {
+	id, err := strconv.ParseUint(os.Args[2], 10, 64)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+	return uint(id)
+}
+
+func markTask(status string) {
+	if len(os.Args) < 3 {
+		fmt.Fprintln(os.Stderr, "The ID of the task is necessary for marking it as \"in progress\"")
+		os.Exit(1)
+	}
+
+	tasks, err := tasksFromFile()
+	if err != nil {
+		if errors.Is(err, os.ErrNotExist) {
+			fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
+			os.Exit(1)
+		} else {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(2)
+		}
+	}
+
+	id := idFromArgs()
+
+	for i := range tasks {
+		if tasks[i].Id == id {
+			tasks[i].Status = status
+			break
+		}
+	}
+
+	writeTasksToFile(tasks)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		// print usage
@@ -112,13 +150,7 @@ func main() {
 			}
 		}
 
-		// Converting ID string to uint
-		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		id := uint(id64)
+		id := idFromArgs()
 
 		description := os.Args[3]
 		for i := range tasks {
@@ -147,13 +179,7 @@ func main() {
 			}
 		}
 
-		// Converting ID string to uint
-		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		id := uint(id64)
+		id := idFromArgs()
 
 		for i := range tasks {
 			if tasks[i].Id == id {
@@ -165,72 +191,10 @@ func main() {
 		writeTasksToFile(tasks)
 
 	case "mark-in-progress":
-		if len(os.Args) < 3 {
-			fmt.Fprintln(os.Stderr, "The ID of the task is necessary for marking it as \"in progress\"")
-			os.Exit(1)
-		}
-
-		tasks, err := tasksFromFile()
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
-				os.Exit(1)
-			} else {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(2)
-			}
-		}
-
-		// Converting ID string to uint
-		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		id := uint(id64)
-
-		for i := range tasks {
-			if tasks[i].Id == id {
-				tasks[i].Status = "in-progress"
-				break
-			}
-		}
-
-		writeTasksToFile(tasks)
+		markTask("in-progress")
 
 	case "mark-done":
-		if len(os.Args) < 3 {
-			fmt.Fprintln(os.Stderr, "The ID of the task is necessary for marking it as \"in progress\"")
-			os.Exit(1)
-		}
-
-		tasks, err := tasksFromFile()
-		if err != nil {
-			if errors.Is(err, os.ErrNotExist) {
-				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
-				os.Exit(1)
-			} else {
-				fmt.Fprintln(os.Stderr, err)
-				os.Exit(2)
-			}
-		}
-
-		// Converting ID string to uint
-		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(1)
-		}
-		id := uint(id64)
-
-		for i := range tasks {
-			if tasks[i].Id == id {
-				tasks[i].Status = "done"
-				break
-			}
-		}
-
-		writeTasksToFile(tasks)
+		markTask("done")
 
 	case "list":
 		status := ""
