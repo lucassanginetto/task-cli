@@ -165,17 +165,73 @@ func main() {
 		writeTasksToFile(tasks)
 
 	case "mark-in-progress":
-		fmt.Println("Marking a task as in progress")
-		// get tasks array from JSON file
-		// get task with provided ID from array
-		// set status of task to "in-progress"
-		// write tasks array to JSON file
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "The ID of the task is necessary for marking it as \"in progress\"")
+			os.Exit(1)
+		}
+
+		tasks, err := tasksFromFile()
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
+				os.Exit(1)
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
+		}
+
+		// Converting ID string to uint
+		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		id := uint(id64)
+
+		for i := range tasks {
+			if tasks[i].Id == id {
+				tasks[i].Status = "in-progress"
+				break
+			}
+		}
+
+		writeTasksToFile(tasks)
+
 	case "mark-done":
-		fmt.Println("Marking a task as done")
-		// get tasks array from JSON file
-		// get task with provided ID from array
-		// set status of task to "done"
-		// write tasks array to JSON file
+		if len(os.Args) < 3 {
+			fmt.Fprintln(os.Stderr, "The ID of the task is necessary for marking it as \"in progress\"")
+			os.Exit(1)
+		}
+
+		tasks, err := tasksFromFile()
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
+				os.Exit(1)
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
+		}
+
+		// Converting ID string to uint
+		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		id := uint(id64)
+
+		for i := range tasks {
+			if tasks[i].Id == id {
+				tasks[i].Status = "done"
+				break
+			}
+		}
+
+		writeTasksToFile(tasks)
+
 	case "list":
 		// set only to ""
 		// if status filter was provided
