@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"strconv"
 	"time"
 )
 
@@ -28,6 +29,18 @@ func tasksFromFile() ([]Task, error) {
 	}
 
 	return tasks, err
+}
+
+func writeTasksToFile(tasks []Task) error {
+	byteValue, err := json.Marshal(tasks)
+	if err != nil {
+		return err
+	}
+	err = os.WriteFile("tasks.json", byteValue, 0644)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func main() {
@@ -77,23 +90,46 @@ func main() {
 			)
 		}
 
-		byteValue, err := json.Marshal(tasks)
-		if err != nil {
-			fmt.Fprintln(os.Stderr, err)
-			os.Exit(2)
-		}
-		err = os.WriteFile("tasks.json", byteValue, 0644)
-		if err != nil {
+		if err := writeTasksToFile(tasks); err != nil {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
 		}
 
 	case "update":
-		fmt.Println("Updating a task")
-		// get tasks array from JSON file
-		// get task with provided ID from array
-		// update task with provided description
-		// write tasks array to JSON file
+		if len(os.Args) < 4 {
+			fmt.Fprintln(os.Stderr, "The ID of the task and a new description are necessary for updating a task")
+			os.Exit(1)
+		}
+
+		tasks, err := tasksFromFile()
+		if err != nil {
+			if errors.Is(err, os.ErrNotExist) {
+				fmt.Fprintln(os.Stderr, "No \"tasks.json\" file was found in the current directory")
+				os.Exit(1)
+			} else {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(2)
+			}
+		}
+
+		// Converting ID string to uint
+		id64, err := strconv.ParseUint(os.Args[2], 10, 64)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err)
+			os.Exit(1)
+		}
+		id := uint(id64)
+
+		description := os.Args[3]
+		for i := range tasks {
+			if tasks[i].Id == id {
+				tasks[i].Description = description
+				tasks[i].UpdatedAt = time.Now()
+			}
+		}
+
+		writeTasksToFile(tasks)
+
 	case "delete":
 		fmt.Println("Deleting a task")
 		// get tasks array from JSON file
