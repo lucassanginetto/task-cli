@@ -71,11 +71,17 @@ func markTask(status string) {
 
 	id := idFromArgs()
 
+	found := false
 	for i := range tasks {
 		if tasks[i].Id == id {
 			tasks[i].Status = status
+			found = true
 			break
 		}
+	}
+	if !found {
+		fmt.Fprintln(os.Stderr, "Task not found")
+		os.Exit(1)
 	}
 
 	writeTasksToFile(tasks)
@@ -151,13 +157,20 @@ func main() {
 		}
 
 		id := idFromArgs()
-
 		description := os.Args[3]
+
+		found := false
 		for i := range tasks {
 			if tasks[i].Id == id {
 				tasks[i].Description = description
 				tasks[i].UpdatedAt = time.Now()
+				found = true
+				break
 			}
+		}
+		if !found {
+			fmt.Fprintln(os.Stderr, "Task not found")
+			os.Exit(1)
 		}
 
 		writeTasksToFile(tasks)
@@ -181,11 +194,17 @@ func main() {
 
 		id := idFromArgs()
 
+		found := false
 		for i := range tasks {
 			if tasks[i].Id == id {
 				tasks = append(tasks[:i], tasks[i+1:]...)
+				found = true
 				break
 			}
+		}
+		if !found {
+			fmt.Fprintln(os.Stderr, "Task not found")
+			os.Exit(1)
 		}
 
 		writeTasksToFile(tasks)
