@@ -87,9 +87,25 @@ func markTask(status string) {
 	writeTasksToFile(tasks)
 }
 
+func printHelp(w io.Writer) {
+	fmt.Fprintf(
+		w,
+		"usage: %s <command> [<args>]\n"+
+			"commands:\n"+
+			"   add <description>           Create a new task with given description\n"+
+			"   update <id> <description>   Change the description of a task\n"+
+			"   delete <id>                 Delete a task\n"+
+			"   mark-in-progress <id>       Mark a task as \"in progress\"\n"+
+			"   mark-done <id>              Mark a task as \"done\"\n"+
+			"   list [<status>]             List tasks\n"+
+			"   help                        Display this\n",
+		os.Args[0],
+	)
+}
+
 func main() {
 	if len(os.Args) < 2 {
-		// print usage
+		printHelp(os.Stderr)
 		os.Exit(1)
 	}
 
