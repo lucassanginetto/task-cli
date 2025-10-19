@@ -268,6 +268,9 @@ func main() {
 			}
 		}
 
+	case "help":
+		printHelp(os.Stdout)
+
 	default:
 		fmt.Fprintf(os.Stderr, "Invalid action \"%s\"\n", action)
 		os.Exit(1)
